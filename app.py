@@ -156,7 +156,7 @@ def predict():
   print(obj)
   return jsonify(obj)
 
-app.run()
+# app.run()
 
 
 
