@@ -16,6 +16,7 @@ import math
 """**Reading DataSet containing symptoms and diseases**"""
 
 df=pd.read_csv("./data/dataset.csv")
+df['Disease']=df['Disease'].str.strip()
 df.head()
 
 """**Describing data to understand it**"""
@@ -33,12 +34,15 @@ df2.head()
 """Reading Disease Precautions"""
 
 precaution=pd.read_csv("./data/symptom_precaution.csv")
+precaution['Disease']= precaution['Disease'].str.strip()
 precaution=precaution.set_index('Disease')
+
 precaution.head()
 
 """Reading Disease Description"""
 
 description=pd.read_csv("./data/symptom_Description.csv")
+description['Disease']= description['Disease'].str.strip()
 description=description.set_index('Disease')
 description.head()
 
@@ -137,7 +141,7 @@ def predict():
       if isinstance(df2.loc[sym]['weight'],np.int64):
         ndf[sym]=int(df2.loc[sym]['weight'])
   ndf=ndf.fillna(0)
-  disease=str(model.predict(ndf)[0]).strip();
+  disease=model.predict(ndf)[0];
   print(disease)
 
   pre=precaution.loc[disease]
