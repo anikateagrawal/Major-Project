@@ -137,7 +137,7 @@ def predict():
       if isinstance(df2.loc[sym]['weight'],np.int64):
         ndf[sym]=int(df2.loc[sym]['weight'])
   ndf=ndf.fillna(0)
-  disease=str(model.predict(ndf)[0]).trim();
+  disease=str(model.predict(ndf)[0]).strip();
   print(disease)
 
   pre=precaution.loc[disease]
