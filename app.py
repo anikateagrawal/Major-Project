@@ -72,7 +72,7 @@ for i in range(len(df)):
     sym=str(s).strip().replace(" ","_").replace("__","_")
     if sym == 'nan':
       continue
-    new_df.loc[i][sym]=1
+    new_df.loc[i][sym]=10
     if sym in df2.index:
       if isinstance(df2.loc[sym]['weight'],np.int64):
         new_df.loc[i][sym]=int(df2.loc[sym]['weight'])
@@ -86,13 +86,13 @@ diseases
 
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import accuracy_score,confusion_matrix,f1_score
-
-
+from sklearn.metrics import accuracy_score,confusion_matrix,f1_score,classification_report
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 """**Splitting into training and testing data**"""
 
-x_train,x_test,y_train,y_test=train_test_split(symptoms,diseases,test_size=0.33,random_state=42)
+x_train,x_test,y_train,y_test=train_test_split(symptoms,diseases,test_size=0.1,random_state=42)
 x_train
 
 y_train
@@ -100,16 +100,17 @@ y_train
 """**Using Decision Tree Classifier, fitting the model to training data and predicting result for test data**"""
 
 model=DecisionTreeClassifier(criterion="gini")
-model.fit(x_train,y_train)
+model.fit(symptoms,diseases)
 y_pred=model.predict(x_test)
 y_pred
 
 """**Checking accuracy of our model**"""
 
-accuracy_score(y_pred,y_test)
-
-confusion_matrix(y_pred,y_test)
-
+print(accuracy_score(y_pred,y_test))
+print(classification_report(y_pred,y_test))
+print(confusion_matrix(y_pred,y_test))
+sns.heatmap(confusion_matrix(y_pred,y_test),xticklabels=df['Disease'].unique(),yticklabels=df['Disease'].unique())
+# plt.show()
 
 
 
@@ -132,11 +133,12 @@ def getSymptoms():
 
 @app.route("/",methods=['POST'])
 def predict():
-  symptoms=json.loads(request.data)
+  syms=json.loads(request.data)
   ndf=pd.DataFrame(index=[1],columns=columns)
-  for s in symptoms:
+  for s in syms:
     sym=str(s).strip().replace(" ","_").replace("__","_")
-    ndf[sym]=1
+    ndf[sym]=10
+    
     if sym in df2.index:
       if isinstance(df2.loc[sym]['weight'],np.int64):
         ndf[sym]=int(df2.loc[sym]['weight'])
@@ -147,12 +149,16 @@ def predict():
   pre=precaution.loc[disease]
   pre=pre.dropna()
   pre=pre.values.tolist()
-  print(pre)
+
   desc=description.loc[disease]
   desc=desc.values.tolist()
-  print(desc)
 
+  sym=df[df['Disease']==disease].values.flatten()
+  sym=pd.unique(sym)[1:].tolist()
+  sym=list(filter(lambda x:isinstance(x,str),sym))
+  
   obj={}
+  obj['symptoms']=sym
   obj['disease']=disease
   obj['precautions']=pre
   obj['description']=desc
