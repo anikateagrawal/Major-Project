@@ -46,6 +46,13 @@ description['Disease']= description['Disease'].str.strip()
 description=description.set_index('Disease')
 description.head()
 
+"""Reading Disease Specialist"""
+specialists=pd.read_csv("./data/symptom_Specialist.csv")
+specialists['Disease']= specialists['Disease'].str.strip()
+specialists=specialists.set_index('Disease')
+specialists.head()
+
+
 """**Extracting unique symptoms**"""
 
 columns=df[['Symptom_1', 'Symptom_2', 'Symptom_3', 'Symptom_4',
@@ -121,15 +128,41 @@ sns.heatmap(confusion_matrix(y_pred,y_test),xticklabels=df['Disease'].unique(),y
 """Creating python flask server
 
 """
+u_diseases=pd.unique(diseases)
+disease_details={}
+for disease in u_diseases:
+  pre=precaution.loc[disease]
+  pre=pre.dropna()
+  pre=pre.values.tolist()
+
+  specialist=specialists.loc[disease].values.tolist()
+
+  desc=description.loc[disease]
+  desc=desc.values.tolist()
+
+  sym=df[df['Disease']==disease].values.flatten()
+  sym=pd.unique(sym)[1:].tolist()
+  sym=list(filter(lambda x:isinstance(x,str),sym))
+  
+  obj={}
+  obj['symptoms']=sym
+  obj['disease']=disease
+  obj['precautions']=pre
+  obj['description']=desc
+  obj['specialist']=specialist
+  disease_details[disease]=obj
+
+
 
 from flask import Flask,jsonify,request,Response,json
 from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
+
 @app.route("/")
 def getSymptoms():
-    return jsonify(columns)
+    return jsonify([columns,disease_details])
 
 @app.route("/",methods=['POST'])
 def predict():
@@ -146,25 +179,7 @@ def predict():
   disease=model.predict(ndf)[0];
   print(disease)
 
-  pre=precaution.loc[disease]
-  pre=pre.dropna()
-  pre=pre.values.tolist()
-
-  desc=description.loc[disease]
-  desc=desc.values.tolist()
-
-  sym=df[df['Disease']==disease].values.flatten()
-  sym=pd.unique(sym)[1:].tolist()
-  sym=list(filter(lambda x:isinstance(x,str),sym))
-  
-  obj={}
-  obj['symptoms']=sym
-  obj['disease']=disease
-  obj['precautions']=pre
-  obj['description']=desc
-
-  print(obj)
-  return jsonify(obj)
+  return jsonify(disease)
 
 # app.run()
 
