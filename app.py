@@ -181,7 +181,7 @@ def predict():
 
   return jsonify(disease)
 
-# app.run()
+app.run()
 
 
 
