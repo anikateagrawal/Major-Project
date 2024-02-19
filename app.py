@@ -80,7 +80,7 @@ for r in range(len(df)):
     if s in df2.index:
       if isinstance(df2.loc[s]['weight'],np.int64):
         ls[s]=int(df2.loc[s]['weight'])
-    adjusted_data.append(ls.copy())
+  adjusted_data.append(ls.copy())
 
 adjusted_data=pd.DataFrame.from_dict(adjusted_data)
 
