@@ -68,31 +68,31 @@ columns
 **Performing Data Pre Processing and data cleaning**
 """
 
-new_df=pd.DataFrame(columns=columns,index=df.index)
-new_df
-
-diseases=[]
-for i in range(len(df)):
-  row=df.iloc[i]
-  diseases.append(row['Disease'])
-  for s in row[1:]:
-    sym=str(s).strip().replace(" ","_").replace("__","_")
-    if sym == 'nan':
+adjusted_data=[]
+for r in range(len(df)):
+  ls=dict()
+  ls["Disease"]=df.iloc[r]["Disease"]
+  for s in df.iloc[r][1:]:
+    s=str(s).strip().replace(" ","_").replace("__","_")
+    if s=="nan":
       continue
-    new_df.loc[i][sym]=10
-    if sym in df2.index:
-      if isinstance(df2.loc[sym]['weight'],np.int64):
-        new_df.loc[i][sym]=int(df2.loc[sym]['weight'])
+    ls[s]=1
+    if s in df2.index:
+      if isinstance(df2.loc[s]['weight'],np.int64):
+        ls[s]=int(df2.loc[s]['weight'])
+    adjusted_data.append(ls.copy())
 
-symptoms=new_df.fillna(0)
-symptoms
+adjusted_data=pd.DataFrame.from_dict(adjusted_data)
 
-diseases
+diseases=adjusted_data["Disease"]
+symptoms=adjusted_data.drop(["Disease"],axis=1)
+symptoms=symptoms.fillna(0)
 
+print(symptoms)
 """**Import Classifier model and metrics from sklearn library**"""
 
 from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score,confusion_matrix,f1_score,classification_report
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -106,7 +106,7 @@ y_train
 
 """**Using Decision Tree Classifier, fitting the model to training data and predicting result for test data**"""
 
-model=DecisionTreeClassifier(criterion="gini")
+model=KNeighborsClassifier()
 model.fit(symptoms,diseases)
 y_pred=model.predict(x_test)
 y_pred
@@ -181,7 +181,7 @@ def predict():
 
   return jsonify(disease)
 
-app.run()
+# app.run()
 
 
 
